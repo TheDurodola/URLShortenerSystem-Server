@@ -5,5 +5,5 @@ import lombok.Data;
 
 @Data
 public class Link {
-    private String id;
+    private String url;
 }

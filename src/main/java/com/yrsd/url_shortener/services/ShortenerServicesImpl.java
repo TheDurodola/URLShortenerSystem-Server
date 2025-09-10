@@ -7,14 +7,17 @@ import com.yrsd.url_shortener.dtos.requests.AddUrlRequest;
 import com.yrsd.url_shortener.dtos.requests.FindUrlRequest;
 import com.yrsd.url_shortener.dtos.responses.AddUrlResponse;
 import com.yrsd.url_shortener.dtos.responses.FindUrlResponse;
+import com.yrsd.url_shortener.exceptions.UrlNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.yrsd.url_shortener.utils.Mapper.map;
+import static com.yrsd.url_shortener.utils.Mapper.mapToFindUrlResponse;
 
 @Service
 public class ShortenerServicesImpl implements ShortenerServices {
@@ -38,13 +41,27 @@ public class ShortenerServicesImpl implements ShortenerServices {
 
     @Override
     public FindUrlResponse findByShortUrl(FindUrlRequest request) {
+        autoDeleteOldUrls();
+
         Link link = new Link();
-        link.setId(request.getUrl());
 
 
 
-        return null;
+        link.setUrl(request.getUrl());
+
+        Optional<Links> found = linksRepo.findByShortUrl(request.getUrl());
+
+
+        if (found.isPresent()) {
+
+            return mapToFindUrlResponse(found.get());
+        }
+        else {
+            throw new UrlNotFoundException();
+        }
+
     }
+
 
     private void assignUrlDetails(Links links) {
         List<Links> listOfLinks = linksRepo.findAll();
