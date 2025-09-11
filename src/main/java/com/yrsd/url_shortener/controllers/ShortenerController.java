@@ -17,21 +17,26 @@ public class ShortenerController {
     ShortenerServices shortenerServices;
 
     @PostMapping("/links")
-    public ResponseEntity<AddUrlResponse> shortenUrl(@RequestBody AddUrlRequest addUrlRequest) {
+    public ResponseEntity<?> shortenUrl(@RequestBody AddUrlRequest addUrlRequest) {
+
+        AddUrlResponse response =shortenerServices.addUrl(addUrlRequest);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(shortenerServices.addUrl(addUrlRequest));
+                .body(response);
     }
 
 
     @GetMapping("/{shortenedUrl}")
-    public ResponseEntity<FindUrlResponse> getUrl(@PathVariable String shortenedUrl) {
+    public ResponseEntity<?> getUrl(@PathVariable String shortenedUrl) {
         FindUrlRequest  findUrlRequest = new FindUrlRequest();
         findUrlRequest.setUrl(shortenedUrl);
+
+        FindUrlResponse response = shortenerServices.findByShortUrl(findUrlRequest);
+
         return ResponseEntity
                 .status(HttpStatus.FOUND)
-                .body(shortenerServices.findByShortUrl(findUrlRequest));
+                .body(response);
     }
 
 
