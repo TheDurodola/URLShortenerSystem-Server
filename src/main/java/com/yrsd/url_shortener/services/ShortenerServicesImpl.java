@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static com.yrsd.url_shortener.utils.Mapper.map;
 import static com.yrsd.url_shortener.utils.Mapper.mapToFindUrlResponse;
+import static com.yrsd.url_shortener.utils.Validator.validateUrl;
 
 @Service
 public class ShortenerServicesImpl implements ShortenerServices {
@@ -29,12 +30,18 @@ public class ShortenerServicesImpl implements ShortenerServices {
     @Override
     public AddUrlResponse addUrl(AddUrlRequest request) {
         autoDeleteOldUrls();
+        validateUrl(request);
+
+        String normalizedUrl = normalizeURL(request.getUrl());
+
+        request.setUrl(normalizedUrl);
+
 
         Links links = map(request);
 
         assignUrlDetails(links);
-
         linksRepo.save(links);
+
         return map(links);
     }
 
@@ -44,8 +51,6 @@ public class ShortenerServicesImpl implements ShortenerServices {
         autoDeleteOldUrls();
 
         Link link = new Link();
-
-
 
         link.setUrl(request.getUrl());
 
@@ -88,6 +93,23 @@ public class ShortenerServicesImpl implements ShortenerServices {
             }
         }
     }
+    private static String normalizeURL(String url) {
+        url = url.trim().toLowerCase();
+
+
+        if (url.contains("//")) {
+            if (url.matches("^(https?)://.*$")) {
+                return url;
+            } else {
+
+                return "http://" + url.replaceFirst("^([^:/]+)//", "$1/");
+            }
+        }
+
+        return "http://" + url;
+    }
+
+
 
 
 }
